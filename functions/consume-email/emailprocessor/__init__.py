@@ -93,8 +93,17 @@ class EmailProcessor(object):
                 if value[0] == " ":
                     value = value.replace(' ', '', 1)
             if field and field in self.required_fields:
+                field = field.replace(' ', '_')
                 dict_line = {
                     field: value
+                }
+                new_message.update(dict_line)
+        # Check if every required field was added
+        for field in self.required_fields:
+            field = field.replace(' ', '_')
+            if field not in new_message:
+                dict_line = {
+                    field: ""
                 }
                 new_message.update(dict_line)
         # TODO: Uncomment below
