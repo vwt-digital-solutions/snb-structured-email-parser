@@ -1,4 +1,4 @@
-from config import EMAIL_PROPERTIES, SENDER, REQUIRED_FIELDS, TOPIC_NAME, TOPIC_PROJECT_ID
+from config import EMAIL_PROPERTIES, SENDER, ID, REQUIRED_FIELDS, TOPIC_NAME, TOPIC_PROJECT_ID
 import os
 import logging
 import json
@@ -16,6 +16,7 @@ class EmailProcessor(object):
         self.required_fields = REQUIRED_FIELDS
         self.topic_project_id = TOPIC_PROJECT_ID
         self.topic_name = TOPIC_NAME
+        self.parsed_email_id = "".join(ID)
 
     def process(self, payload):
         mail = payload[os.environ.get('DATA_SELECTOR', 'Required parameter is missing')]
@@ -106,6 +107,10 @@ class EmailProcessor(object):
                     field: ""
                 }
                 new_message.update(dict_line)
+        # Add an ID
+        received_on_list = mail["received_on"].split("+")
+        received_on = received_on_list[0]
+        new_message.update({"id": "{}_{}".format(new_message[self.parsed_email_id], received_on)})
         # TODO: Uncomment below
         # metadata = Gobits.from_request(request=payload)
         # TODO: remove below #

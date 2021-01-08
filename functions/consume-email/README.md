@@ -6,6 +6,7 @@ This function consumes messages containing e-mails posted on a Pub/Sub Topic, pa
     ~~~
     EMAIL_PROPERTIES = Identifiers for the JSON fields in the message
     SENDER = E-mail address where e-mails should come from
+    ID = A list containing e-mail fields where the ID of the message can be build from
     REQUIRED_FIELDS = The fields that should be gotten from the e-mail and send to a topic
     TOPIC_NAME = The name of the topic where the e-mails should be send to when parsed
     TOPIC_PROJECT_ID = The project id that contains the topic
