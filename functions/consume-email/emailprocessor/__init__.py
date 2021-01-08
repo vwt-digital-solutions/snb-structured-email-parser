@@ -110,6 +110,7 @@ class EmailProcessor(object):
         # Add an ID
         received_on_list = mail["received_on"].split("+")
         received_on = received_on_list[0]
+        received_on = received_on.replace(':', '-')
         new_message.update({"id": "{}_{}".format(new_message[self.parsed_email_id], received_on)})
         # TODO: Uncomment below
         # metadata = Gobits.from_request(request=payload)
