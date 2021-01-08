@@ -1,0 +1,16 @@
+EMAIL_PROPERTIES = {
+    "email": {
+        "entity_name": "emails"
+    }
+}
+
+SENDER = "e-mail address where e-mails should come from"
+
+REQUIRED_FIELDS = [
+    "e-mail-field1",
+    "e-mail-field2",
+    "etcetera"
+]
+
+TOPIC_PROJECT_ID = "topic-project-id"
+TOPIC_NAME = "topic-name"
