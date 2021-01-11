@@ -111,7 +111,20 @@ class EmailProcessor(object):
         received_on_list = mail["received_on"].split("+")
         received_on = received_on_list[0]
         received_on = received_on.replace(':', '-')
-        new_message.update({"id": "{}_{}".format(new_message[self.parsed_email_id], received_on)})
+        subject_mail = mail["subject"]
+        ticket_nr = ""
+        for ch in range(len(subject_mail)):
+            if subject_mail[ch] == "[":
+                while True:
+                    if ch + 1 > len(subject_mail):
+                        break
+                    if subject_mail[ch+1] == "]":
+                        break
+                    ch = ch + 1
+                    ticket_nr = ticket_nr + subject_mail[ch]
+        if "Ticket#" not in ticket_nr:
+            logging.error("The ticket number cannot be found in the e-mail")
+        new_message.update({"id": "{}_{}_{}".format(new_message[self.parsed_email_id], ticket_nr, received_on)})
         # TODO: Uncomment below
         # metadata = Gobits.from_request(request=payload)
         # TODO: remove below #
