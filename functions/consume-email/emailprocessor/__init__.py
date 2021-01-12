@@ -95,6 +95,7 @@ class EmailProcessor(object):
                     value = value.replace(' ', '', 1)
             if field and field in self.required_fields:
                 field = field.replace(' ', '_')
+                field = field.lower()
                 dict_line = {
                     field: value
                 }
@@ -102,6 +103,7 @@ class EmailProcessor(object):
         # Check if every required field was added
         for field in self.required_fields:
             field = field.replace(' ', '_')
+            field = field.lower()
             if field not in new_message:
                 dict_line = {
                     field: ""
