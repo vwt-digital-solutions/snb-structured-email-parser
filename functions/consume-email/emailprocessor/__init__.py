@@ -30,8 +30,18 @@ class EmailProcessor(object):
                 logging.info("Mail received was not send by the right e-mail address")
                 sys.exit(0)
         html_content = mail["body"]
+        # Check if code contains "<table>", "<tr>" and "<td>" tags
+        if "<table>" not in html_content or \
+           "<tr>" not in html_content or \
+           "<td>" not in html_content:
+            logging.info("Required tags cannot be found in HTML body")
+            sys.exit(0)
         # Get part before table
         html_above_table = html_content.split('<table>')[0]
+        # Check if the part is not empty
+        if not html_above_table:
+            logging.info("HTML body does not have the required structure")
+            sys.exit(0)
         html_above_table_list = html_above_table.split("\n")
         # The new json to be send
         new_message = {}
