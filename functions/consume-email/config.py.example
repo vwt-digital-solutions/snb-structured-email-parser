@@ -1,9 +1,3 @@
-EMAIL_PROPERTIES = {
-    "email": {
-        "entity_name": "emails"
-    }
-}
-
 SENDER = "e-mail address where e-mails should come from"
 
 ID = ["e-mail-field1", "e-mail-field2", "etcetera"]

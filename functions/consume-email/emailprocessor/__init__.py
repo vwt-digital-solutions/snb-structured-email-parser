@@ -1,17 +1,15 @@
-from config import EMAIL_PROPERTIES, SENDER, ID, REQUIRED_FIELDS, TOPIC_NAME, TOPIC_PROJECT_ID
-import os
+from config import SENDER, ID, REQUIRED_FIELDS, TOPIC_NAME, TOPIC_PROJECT_ID
 import logging
 import json
 import sys
 from gobits import Gobits
 from google.cloud import pubsub_v1
-from bleach import Cleaner, sanitizer
+from bs4 import BeautifulSoup
 
 
 class EmailProcessor(object):
 
     def __init__(self):
-        self.meta = EMAIL_PROPERTIES[os.environ.get('DATA_SELECTOR', 'Required parameter is missing')]
         self.sender = SENDER
         self.required_fields = REQUIRED_FIELDS
         self.topic_project_id = TOPIC_PROJECT_ID
@@ -19,7 +17,7 @@ class EmailProcessor(object):
         self.parsed_email_id = "".join(ID)
 
     def process(self, payload):
-        mail = payload[os.environ.get('DATA_SELECTOR', 'Required parameter is missing')]
+        mail = payload["email"]
         mail_sender = mail["sender"]
         date = ""
         if "Datum" in mail:
@@ -31,29 +29,21 @@ class EmailProcessor(object):
             else:
                 logging.info("Mail received was not send by the right e-mail address")
                 sys.exit(0)
-        mail_body = mail["body"]
-        # TODO: remove below #
-        custom_tags = sanitizer.ALLOWED_TAGS + ['tr', 'td', 'table', 'tbody']
-        html_content = self.parse_html_content(mail_body, tags=custom_tags)
-        ######################
-        html_content = html_content.replace('<table>', '')
-        html_content = html_content.replace('</table>', '')
-        html_content = html_content.replace('<tbody>', '')
-        html_content = html_content.replace('</tbody>', '')
-        html_content = html_content.replace('<td>', '')
-        html_content = html_content.replace('</td>', '')
-        html_content_lines = html_content.split("\n")
+        html_content = mail["body"]
+        # Get part before table
+        html_above_table = html_content.split('<table>')[0]
+        html_above_table_list = html_above_table.split("\n")
         # The new json to be send
         new_message = {}
-        # For every line in the HTML message
-        for li in range(len(html_content_lines)):
-            line = html_content_lines[li]
+        # For every line in the part above the table
+        for line in html_above_table_list:
             field = ""
             value = ""
-            # Check if there's a ': <<' in the line
-            if ": &lt;&lt;" in line:
-                # Split the line on ":"
-                line_list = line.split(':')
+            # If the line contains information
+            if line:
+                # Split the line on ': <<'
+                line_list = line.split(": &lt;&lt;")
+                # The first value of the line is the field
                 field = line_list.pop(0)
                 # Check if the field can be found in the required fields
                 if field in self.required_fields:
@@ -61,45 +51,32 @@ class EmailProcessor(object):
                     # there are multiple list items after the first
                     # Combine them again
                     value = ''.join(line_list)
-            # Else check if <tr> is in the line
-            elif "<tr>" in line:
-                # If it is, the next line is field
-                if (li + 1) > len(html_content_lines):
-                    logging.error("Something went wrong in parsing the email")
-                    sys.exit(1)
-                field = html_content_lines[li+1]
-                # Replace ':' in field
-                field = field.replace(':', '')
-                # If field can be found in required field
-                if field in self.required_fields:
-                    # The value are the lines until a </tr> is found
-                    value = ''
-                    line_index = li + 2
-                    next_line = html_content_lines[line_index]
-                    while True:
-                        if "</tr>" in next_line:
-                            break
-                        if value:
-                            value = value + "\n"
-                        value = value + html_content_lines[line_index]
-                        line_index = line_index + 1
-                        next_line = html_content_lines[line_index]
-                    if line_index < len(html_content_lines):
-                        li = line_index
             if value:
                 # Remove '<<' and '>>'
                 value = value.replace('&lt;&lt;', '')
                 value = value.replace('&gt;&gt;', '')
-                # If the first character is a whitespace, remove it
-                if value[0] == " ":
-                    value = value.replace(' ', '', 1)
-            if field and field in self.required_fields:
-                field = field.replace(' ', '_')
-                field = field.lower()
-                dict_line = {
-                    field: value
-                }
-                new_message.update(dict_line)
+                # Check if value still has a value
+                if value:
+                    #  If the first character is a whitespace, remove it
+                    if value[0] == " ":
+                        value = value.replace(' ', '', 1)
+            if field:
+                new_message = self.add_field(field, value, new_message)
+        # HTML to parse-able content
+        parsed_html = BeautifulSoup(html_content, 'html.parser')
+        # Get table part
+        table = parsed_html.table
+        # Get values from the table
+        lines = table.find_all('tr')
+        for line in lines:
+            # Split on tag 'td'
+            td_list = line.find_all('td')
+            # Field
+            field = td_list[0].get_text()
+            # value
+            value = td_list[1].get_text()
+            if field:
+                new_message = self.add_field(field, value, new_message)
         # Check if every required field was added
         for field in self.required_fields:
             field = field.replace(' ', '_')
@@ -136,6 +113,17 @@ class EmailProcessor(object):
         if not return_bool_publish_topic:
             sys.exit(1)
 
+    def add_field(self, field, value, message):
+        if field in self.required_fields:
+            field = field.replace(' ', '_')
+            field = field.replace(':', '')
+            field = field.lower()
+            dict_line = {
+                field: value
+            }
+            message.update(dict_line)
+        return message
+
     def publish_to_topic(self, message, gobits):
         date = ""
         if "Datum" in message:
@@ -163,10 +151,3 @@ class EmailProcessor(object):
             logging.exception('Unable to publish parsed email ' +
                               'to topic because of {}'.format(e))
         return False
-
-    # TODO: remove function below
-    def parse_html_content(self, html, **kwargs):
-        if html is None:
-            return None
-        cleaner = Cleaner(**kwargs, strip=True)
-        return cleaner.clean(html)
