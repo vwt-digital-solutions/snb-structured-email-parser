@@ -1,7 +1,7 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/vwt-digital-solutions/ns-tmobile-email-parser/badge)](https://www.codefactor.io/repository/github/vwt-digital-solutions/ns-tmobile-email-parser)
+[![CodeFactor](https://www.codefactor.io/repository/github/vwt-digital-solutions/ns-structured-email-parser/badge)](https://www.codefactor.io/repository/github/vwt-digital-solutions/ns-structured-email-parser)
 
-# ns-tmobile-email-parser
-This repository contains code to parse emails from T-Mobile.
+# ns-structured-email-parser
+This repository contains code to parse structured emails.
 
 ## Functions
 The functions folder contains Cloud Functions.
