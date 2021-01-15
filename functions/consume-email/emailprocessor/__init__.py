@@ -121,7 +121,8 @@ class EmailProcessor(object):
             logging.info("The ticket number cannot be found in the e-mail")
             sys.exit(0)
         new_message.update({"id": "{}_{}_{}".format(new_message[self.parsed_email_id], ticket_nr, received_on)})
-        metadata = Gobits.from_request(request=payload)
+        # metadata = Gobits.from_request(request=payload)
+        metadata = Gobits()
         return_bool_publish_topic = self.publish_to_topic(new_message, metadata)
         if not return_bool_publish_topic:
             sys.exit(1)
