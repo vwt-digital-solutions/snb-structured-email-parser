@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def email_parser(request):
+    logging.info("email_parser called")
     # Extract data from request
     envelope = json.loads(request.data.decode('utf-8'))
     payload = base64.b64decode(envelope['message']['data'])
@@ -28,7 +29,3 @@ def email_parser(request):
     # Returning any 2xx status indicates successful receipt of the message.
     # 204: no content, delivery successfull, no further actions needed
     return 'OK', 204
-
-
-if __name__ == '__main__':
-    logging.info("Hallo")
