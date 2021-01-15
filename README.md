@@ -1,5 +1,3 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/vwt-digital-solutions/ns-structured-email-parser/badge)](https://www.codefactor.io/repository/github/vwt-digital-solutions/ns-structured-email-parser)
-
 # ns-structured-email-parser
 This repository contains code to parse structured emails.
 

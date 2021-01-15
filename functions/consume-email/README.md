@@ -10,11 +10,7 @@ This function consumes messages containing e-mails posted on a Pub/Sub Topic, pa
     TOPIC_NAME = The name of the topic where the e-mails should be send to when parsed
     TOPIC_PROJECT_ID = The project id that contains the topic
     ~~~
-2. Make sure the following variables are present in the environment:
-    ~~~
-    DATA_SELECTOR = The identifier used for this configuration, based on the EMAIL_PROPERTIES
-    ~~~
-3. Deploy the function with help of the [cloudbuild.example.yaml](cloudbuild.example.yaml) to the Google Cloud Platform.
+2. Deploy the function with help of the [cloudbuild.example.yaml](cloudbuild.example.yaml) to the Google Cloud Platform.
 
 ## Incoming message
 To make sure the function works according to the way it was intented, the incoming messages from a Pub/Sub Topic must have the following structure based on the [company-data structure](https://vwt-digital.github.io/project-company-data.github.io/v1.1/schema):

@@ -88,6 +88,7 @@ class EmailProcessor(object):
             if field:
                 new_message = self.add_field(field, value, new_message)
         # Check if every required field was added
+        added_field_count = 0
         for field in self.required_fields:
             field = field.replace(' ', '_')
             field = field.lower()
@@ -96,6 +97,11 @@ class EmailProcessor(object):
                     field: ""
                 }
                 new_message.update(dict_line)
+                added_field_count = added_field_count + 1
+        # Check if added fields are not equal to all the fields
+        if added_field_count is len(self.required_fields):
+            logging.info("HTML body does not contain any of the required fields")
+            sys.exit(0)
         # Add an ID
         received_on_list = mail["received_on"].split("+")
         received_on = received_on_list[0]
@@ -112,13 +118,10 @@ class EmailProcessor(object):
                     ch = ch + 1
                     ticket_nr = ticket_nr + subject_mail[ch]
         if "Ticket#" not in ticket_nr:
-            logging.error("The ticket number cannot be found in the e-mail")
+            logging.info("The ticket number cannot be found in the e-mail")
+            sys.exit(0)
         new_message.update({"id": "{}_{}_{}".format(new_message[self.parsed_email_id], ticket_nr, received_on)})
-        # TODO: Uncomment below
-        # metadata = Gobits.from_request(request=payload)
-        # TODO: remove below #
-        metadata = Gobits()
-        ######################
+        metadata = Gobits.from_request(request=payload)
         return_bool_publish_topic = self.publish_to_topic(new_message, metadata)
         if not return_bool_publish_topic:
             sys.exit(1)
