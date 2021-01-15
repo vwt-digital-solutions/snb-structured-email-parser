@@ -6,6 +6,8 @@ from gobits import Gobits
 from google.cloud import pubsub_v1
 from bs4 import BeautifulSoup
 
+logging.basicConfig(level=logging.INFO)
+
 
 class EmailProcessor(object):
 
