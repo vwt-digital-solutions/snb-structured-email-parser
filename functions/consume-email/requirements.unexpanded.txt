@@ -1,0 +1,4 @@
+beautifulsoup4==4.9.3
+dataclasses==0.6
+gobits==1.0.5
+google-cloud-pubsub==2.2.0
