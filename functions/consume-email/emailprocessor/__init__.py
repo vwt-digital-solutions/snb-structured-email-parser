@@ -85,6 +85,9 @@ class EmailProcessor(object):
             td_list = line.find_all('td')
             # Field
             field = td_list[0].get_text()
+            # Remove ':' from end of field
+            if field.endswith(":"):
+                field = field[:-1]
             # value
             value = td_list[1].get_text()
             if field:
