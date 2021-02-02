@@ -137,6 +137,15 @@ class EmailProcessor(object):
             field = field.replace(' ', '_')
             field = field.replace(':', '')
             field = field.lower()
+            # Check if field can already be found in message
+            if field in message:
+                # If it is, add an integer next to the field until the field is not in the message already
+                count = 1
+                while True:
+                    if field not in message:
+                        break
+                    field = f"{field}_{count}"
+                    count = count + 1
             dict_line = {
                 field: value
             }
