@@ -21,6 +21,7 @@ class EmailProcessor(object):
         mail = payload["email"]
         if self.process_mail(mail) is False:
             logging.info("Message not processed")
+        logging.info("Message is processed")
 
     def process_mail(self, mail):
         mail_sender = mail["sender"]
