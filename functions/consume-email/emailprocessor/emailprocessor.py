@@ -49,7 +49,12 @@ class EmailProcessor(object):
         if not html_above_table:
             logging.info("HTML body does not have the required structure")
             return False
-        html_above_table_list = html_above_table.split("\\n")
+        html_above_table_list = html_above_table.split("\n")
+        # If the length is 1
+        if len(html_above_table_list) == 1:
+            # Try to split on \\n
+            html_above_table_list = html_above_table.split("\\n")
+        # If the length is empty
         if not html_above_table_list:
             logging.error("There should be apart above the table in the email")
             return False
