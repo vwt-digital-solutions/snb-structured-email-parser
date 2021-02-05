@@ -48,7 +48,10 @@ class EmailProcessor(object):
         if not html_above_table:
             logging.info("HTML body does not have the required structure")
             return False
-        html_above_table_list = html_above_table.split("\n")
+        html_above_table_list = html_above_table.split("\\n")
+        if not html_above_table_list:
+            logging.error("There should be apart above the table in the email")
+            return False
         # The new json to be send
         new_message = {}
         # For every line in the part above the table
@@ -128,6 +131,9 @@ class EmailProcessor(object):
                     ticket_nr = ticket_nr + subject_mail[ch]
         if "Ticket#" not in ticket_nr:
             logging.info("The ticket number cannot be found in the e-mail")
+            return False
+        if not new_message[self.parsed_email_id]:
+            logging.error(f"ID {self.parsed_email_id} is empty in message")
             return False
         new_message.update({"id": "{}_{}_{}".format(new_message[self.parsed_email_id], ticket_nr, received_on)})
         metadata = Gobits()
