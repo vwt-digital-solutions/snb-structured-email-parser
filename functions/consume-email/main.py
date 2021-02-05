@@ -9,7 +9,6 @@ logging.basicConfig(level=logging.INFO)
 
 
 def email_parser(request):
-    logging.info("email_parser called")
     # Extract data from request
     envelope = json.loads(request.data.decode('utf-8'))
     payload = base64.b64decode(envelope['message']['data'])
