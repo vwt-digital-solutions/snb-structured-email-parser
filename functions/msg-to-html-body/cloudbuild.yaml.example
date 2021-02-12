@@ -1,0 +1,20 @@
+---
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud functions deploy ${PROJECT_ID}-export-email-func \
+          --entry-point=msg_to_html_body \
+          --runtime=python37 \
+          --trigger-http \
+          --project=${PROJECT_ID} \
+          --region=europe-west1 \
+          --max-instances=1 \
+          --timeout=540
+          --set-env-vars=DATA_SELECTOR=data_selector \
+        gcloud beta functions set-iam-policy ${PROJECT_ID}-export-email-func \
+          --region=europe-west1 \
+          --project=${PROJECT_ID} ../../../config/${PROJECT_ID}/consume_func_permissions.json
+    dir: 'functions/msg-to-html-body'

@@ -2,6 +2,7 @@
 *Config.py
 .vscode/
 main-test.py
+functions/msg-to-html-body/templates
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
