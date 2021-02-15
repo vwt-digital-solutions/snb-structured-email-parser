@@ -1,14 +1,14 @@
 import logging
 import json
 import base64
-from emailprocessor import EmailProcessor
+from messageprocessor import MessageProcessor
 
-parser = EmailProcessor()
+parser = MessageProcessor()
 
 logging.basicConfig(level=logging.INFO)
 
 
-def email_parser(request):
+def msg_to_html_body(request):
     # Extract data from request
     envelope = json.loads(request.data.decode('utf-8'))
     payload = base64.b64decode(envelope['message']['data'])

@@ -1,0 +1,47 @@
+TOPIC_NAME = "topic-name"
+TOPIC_PROJECT_ID = "topic-project-id"
+TEMPLATE_PATH_FIELD = "the field which can have as value one of the fields in HTML_TEMPLATE_PATHS"
+TEMPLATE_PATH_FIELD_ROOT = "optional to add the root where the field can be found"
+HTML_TEMPLATE_PATHS = {
+    "TEMPLATE_PATH_FIELD_value_1": {
+        "template_path": "directory_path_1",
+        "template_args": {
+            "arg_field": {
+                "arg_field_value": "MESSAGE_FIELD"
+            }
+        },
+        "mail_subject": {
+            "subject_part_1": "HARDCODED or MESSAGE_FIELD",
+            "subject_part_2": "HARDCODED or MESSAGE_FIELD",
+            "subject_part_etcetera": "HARDCODED or MESSAGE_FIELD"
+        }
+    },
+    "TEMPLATE_PATH_FIELD_value_2": {
+        "template_path": "directory_path_1",
+        "template_args": {
+            "arg_field": {
+                "arg_field_value": "MESSAGE_FIELD"
+            }
+        },
+        "mail_subject": {
+            "subject_part_1": "HARDCODED or MESSAGE_FIELD",
+            "subject_part_2": "HARDCODED or MESSAGE_FIELD",
+            "subject_part_etcetera": "HARDCODED or MESSAGE_FIELD"
+        }
+    },
+    "TEMPLATE_PATH_FIELD_value_etcetera": {
+        "template_path": "directory_path_1_etcetera",
+        "template_args": {
+            "arg_field": {
+                "arg_field_value": "MESSAGE_FIELD"
+            }
+        },
+        "mail_subject": {
+            "subject_part_1": "HARDCODED or MESSAGE_FIELD",
+            "subject_part_2": "HARDCODED or MESSAGE_FIELD",
+            "subject_part_etcetera": "HARDCODED or MESSAGE_FIELD"
+        }
+    }
+}
+RECIPIENT="recipient-email-address"
+SENDER="sender-email-address"

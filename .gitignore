@@ -1,7 +1,8 @@
 *config.py
 *Config.py
 .vscode/
-consume-email-main-test.py
+main-test.py
+functions/msg-to-html-body/templates
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
