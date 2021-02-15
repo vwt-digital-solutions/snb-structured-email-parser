@@ -83,16 +83,17 @@ class MessageProcessor(object):
         for arg_field in template_args:
             # Get value
             arg_value = ""
-            arg_field_value = template_args[arg_field]
-            # Check if value is MESSAGE_FIELD
-            if arg_field_value == "MESSAGE_FIELD":
-                # Get value from message
-                # Check if there is a root defined
-                if self.html_template_root:
-                    arg_value = message.get(self.html_template_root).get(arg_field)
-                else:
-                    arg_value = message.get(arg_field)
-            kwargs.update({arg_field: arg_value})
+            arg_field_values = template_args[arg_field]
+            for arg_field_value in arg_field_values:
+                # Check if value is MESSAGE_FIELD
+                if arg_field_values[arg_field_value] == "MESSAGE_FIELD":
+                    # Get value from message
+                    # Check if there is a root defined
+                    if self.html_template_root:
+                        arg_value = message.get(self.html_template_root).get(arg_field_value)
+                    else:
+                        arg_value = message.get(arg_field)
+                kwargs.update({arg_field: arg_value})
         with open(template_path) as file_:
             template = Template(file_.read())
         body = template.render(kwargs)
