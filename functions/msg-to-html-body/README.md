@@ -99,18 +99,6 @@ To make sure the function works according to the way it was intented, the incomi
   }
 }
 ~~~
-or
-~~~JSON
-{
-  "gobits": [ ],
-  "message_field": {
-    "field_1": "value_1",
-    "field_2": "value_2",
-    "field_etcetera": "value_etcetera"
-  }
-}
-~~~
-
 
 ## License
 This function is licensed under the [GPL-3](https://www.gnu.org/licenses/gpl-3.0.en.html) License
