@@ -1,6 +1,5 @@
 from config import TOPIC_PROJECT_ID, TOPIC_NAME, HTML_TEMPLATE_PATHS, \
-                   TEMPLATE_PATH_FIELD, TEMPLATE_PATH_FIELD_ROOT, RECIPIENT, \
-                   SENDER
+                   TEMPLATE_PATH_FIELD, RECIPIENT, SENDER
 import logging
 import json
 import os
@@ -18,7 +17,6 @@ class MessageProcessor(object):
         self.data_selector = os.environ.get('DATA_SELECTOR', 'Required environment variable DATA_SELECTOR is missing')
         self.topic_project_id = TOPIC_PROJECT_ID
         self.topic_name = TOPIC_NAME
-        self.html_template_root = TEMPLATE_PATH_FIELD_ROOT
         self.html_template_field = TEMPLATE_PATH_FIELD
         self.html_template_paths = HTML_TEMPLATE_PATHS
         self.recipient = RECIPIENT
@@ -63,12 +61,21 @@ class MessageProcessor(object):
         if not self.html_template_paths:
             logging.error("HTML template path is not defined in config")
             return None, None
-        # Check if there is a root defined
-        temp_msg_field = ""
-        if self.html_template_root:
-            temp_msg_field = message.get(self.html_template_root).get(self.html_template_field)
-        else:
-            temp_msg_field = message.get(self.html_template_field)
+        message_after_root = {}
+        count = 0
+        # Get part of message after the root
+        for after_root in message:
+            if isinstance(message[after_root], dict):
+                message_after_root = message[after_root]
+            count = count + 1
+        if count > 1:
+            logging.error("The message contains multiple roots")
+            return None, None
+        if not message_after_root:
+            logging.error("The message does not contain a root")
+            return None, None
+        # Get message field
+        temp_msg_field = message_after_root.get(self.html_template_field)
         if not temp_msg_field:
             logging.error("Could not get right message field to get template")
             return None, None
@@ -83,16 +90,18 @@ class MessageProcessor(object):
         for arg_field in template_args:
             # Get value
             arg_value = ""
-            arg_field_value = template_args[arg_field]
-            # Check if value is MESSAGE_FIELD
-            if arg_field_value == "MESSAGE_FIELD":
-                # Get value from message
-                # Check if there is a root defined
-                if self.html_template_root:
-                    arg_value = message.get(self.html_template_root).get(arg_field)
-                else:
-                    arg_value = message.get(arg_field)
-            kwargs.update({arg_field: arg_value})
+            arg_field_values = template_args[arg_field]
+            for arg_field_value in arg_field_values:
+                # Check if value is MESSAGE_FIELD
+                if arg_field_values[arg_field_value] == "MESSAGE_FIELD":
+                    # Get value from message
+                    arg_value = message_after_root.get(arg_field_value)
+                    # Check if format is datetime
+                    arg_value_format = arg_field_values.get("arg_field_format")
+                    if arg_value_format:
+                        if arg_value_format == "DATETIME":
+                            arg_value = datetime.datetime.strptime(arg_value, '%Y%m%d%H%M%S')
+                kwargs.update({arg_field: arg_value})
         with open(template_path) as file_:
             template = Template(file_.read())
         body = template.render(kwargs)
@@ -107,11 +116,7 @@ class MessageProcessor(object):
             if mail_subject[field] == "HARDCODED":
                 to_add = field
             elif mail_subject[field] == "MESSAGE_FIELD":
-                # If there's is a root defined
-                if self.html_template_root:
-                    subject_msg_field = message.get(self.html_template_root).get(field)
-                else:
-                    subject_msg_field = message.get(field)
+                subject_msg_field = message_after_root.get(field)
                 # Check if subject field is found
                 if not subject_msg_field:
                     logging.error(f"Field {field} could not be found in message")
