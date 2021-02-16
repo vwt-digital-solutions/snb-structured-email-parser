@@ -39,7 +39,8 @@ The ```HTML_TEMPLATE_PATHS``` field can look as follows:
         "template_path": "directory_path_1",
         "template_args": {
             "arg_field": {
-                "arg_field_value": "MESSAGE_FIELD"
+                "arg_field_value": "MESSAGE_FIELD",
+                "arg_field_format": "DATETIME"
             }
         },
         "mail_subject": {
@@ -65,7 +66,9 @@ The ```HTML_TEMPLATE_PATHS``` field can look as follows:
 ~~~
 The field ```template_args``` should be a dictionary containing arguments that have to be given to the templates.  
 For now it can only have the value ```MESSAGE_FIELD```, which means the argument's value should come from the message field  
-given as the ```arg_field_value```. The ```arg_field``` should be the argument that needs to be given to the HTML template.
+given as the ```arg_field_value```. The ```arg_field``` should be the argument that needs to be given to the HTML template.  
+This value in the HTML template could need a *datetime* format, in that case add the field ```arg_field_format``` with as
+ it's value ```DATETIME```.
 
 The fields in the ```mail_subject``` field define what the subject consist of. Together, they make the subject of the email.  
 They can be ```HARDCODED```, in that case the ```subject_part``` is the hardcoded value. Or they can be a ```MESSAGE_FIELD```  

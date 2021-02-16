@@ -96,6 +96,11 @@ class MessageProcessor(object):
                 if arg_field_values[arg_field_value] == "MESSAGE_FIELD":
                     # Get value from message
                     arg_value = message_after_root.get(arg_field_value)
+                    # Check if format is datetime
+                    arg_value_format = arg_field_values.get("arg_field_format")
+                    if arg_value_format:
+                        if arg_value_format == "DATETIME":
+                            arg_value = datetime.datetime.strptime(arg_value, '%Y%m%d%H%M%S')
                 kwargs.update({arg_field: arg_value})
         with open(template_path) as file_:
             template = Template(file_.read())
