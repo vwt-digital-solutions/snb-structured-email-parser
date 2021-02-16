@@ -162,6 +162,11 @@ class EmailProcessor(object):
                         break
                     field = f"{field}_{count}"
                     count = count + 1
+            # Remove HTML whitespace code from value
+            if "&amp;nbsp;" in value:
+                value = value.replace('&amp;nbsp;', ' ')
+            if "&nbsp;" in value:
+                value = value.replace('&nbsp;', ' ')
             dict_line = {
                 field: value
             }
