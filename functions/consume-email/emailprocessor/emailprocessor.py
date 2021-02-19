@@ -167,6 +167,9 @@ class EmailProcessor(object):
                 value = value.replace('&amp;nbsp;', ' ')
             if "&nbsp;" in value:
                 value = value.replace('&nbsp;', ' ')
+            # Remove non breaking whitespace HTML code from value
+            if u"\u00a0" in value:
+                value = value.replace(u'\u00a0', ' ')
             dict_line = {
                 field: value
             }
