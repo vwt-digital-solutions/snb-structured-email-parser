@@ -1,6 +1,6 @@
 from config import TOPIC_PROJECT_ID, TOPIC_NAME, HTML_TEMPLATE_PATHS, \
                    TEMPLATE_PATH_FIELD, RECIPIENT_MAPPING_MESSAGE_FIELD, \
-                   RECIPIENT_MAPPING_MESSAGE_FIELD_ROOT, RECIPIENT_MAPPING, SENDER
+                   RECIPIENT_MAPPING, SENDER
 import logging
 import json
 import os
@@ -21,7 +21,6 @@ class MessageProcessor(object):
         self.topic_name = TOPIC_NAME
         self.html_template_field = TEMPLATE_PATH_FIELD
         self.html_template_paths = HTML_TEMPLATE_PATHS
-        self.recipient_mapping_message_field_root = RECIPIENT_MAPPING_MESSAGE_FIELD_ROOT
         self.recipient_mapping_message_field = RECIPIENT_MAPPING_MESSAGE_FIELD
         self.recipient_mapping = RECIPIENT_MAPPING
         self.sender = SENDER
@@ -36,10 +35,14 @@ class MessageProcessor(object):
             logging.error("Message was not processed")
             return False
         # Make topic message
-        recipient_mapping_field_dict = message.get(self.recipient_mapping_message_field_root)
-        if not recipient_mapping_field_dict:
-            logging.error(f"The field {self.recipient_mapping_message_field_root} could not be found in the message")
+        count = 0
+        for field in message:
+            message_root = field
+            count = count + 1
+        if count > 1:
+            logging.error("Message has multiple roots")
             return False
+        recipient_mapping_field_dict = message.get(message_root)
         recipient_mapping_field_message = recipient_mapping_field_dict.get(self.recipient_mapping_message_field)
         if not recipient_mapping_field_message:
             logging.error(f"The field {self.recipient_mapping_message_field} could not be found in the message")
