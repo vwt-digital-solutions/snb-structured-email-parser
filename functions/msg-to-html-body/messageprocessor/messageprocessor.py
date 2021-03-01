@@ -1,5 +1,6 @@
 from config import TOPIC_PROJECT_ID, TOPIC_NAME, HTML_TEMPLATE_PATHS, \
-                   TEMPLATE_PATH_FIELD, RECIPIENT, SENDER
+                   TEMPLATE_PATH_FIELD, RECIPIENT_MAPPING_MESSAGE_FIELD, \
+                   RECIPIENT_MAPPING_MESSAGE_FIELD_ROOT, RECIPIENT_MAPPING, SENDER
 import logging
 import json
 import os
@@ -7,6 +8,7 @@ from jinja2 import Template
 import datetime
 from gobits import Gobits
 from google.cloud import pubsub_v1
+from .firestoreprocessor import FirestoreProcessor
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,8 +21,11 @@ class MessageProcessor(object):
         self.topic_name = TOPIC_NAME
         self.html_template_field = TEMPLATE_PATH_FIELD
         self.html_template_paths = HTML_TEMPLATE_PATHS
-        self.recipient = RECIPIENT
+        self.recipient_mapping_message_field_root = RECIPIENT_MAPPING_MESSAGE_FIELD_ROOT
+        self.recipient_mapping_message_field = RECIPIENT_MAPPING_MESSAGE_FIELD
+        self.recipient_mapping = RECIPIENT_MAPPING
         self.sender = SENDER
+        self.gcp_firestore = FirestoreProcessor()
 
     def process(self, payload):
         # Get message
@@ -31,7 +36,18 @@ class MessageProcessor(object):
             logging.error("Message was not processed")
             return False
         # Make topic message
-        topic_message = self.make_topic_msg(html_body, subject)
+        recipient_mapping_field_dict = message.get(self.recipient_mapping_message_field_root)
+        if not recipient_mapping_field_dict:
+            logging.error(f"The field {self.recipient_mapping_message_field_root} could not be found in the message")
+            return False
+        recipient_mapping_field_message = recipient_mapping_field_dict.get(self.recipient_mapping_message_field)
+        if not recipient_mapping_field_message:
+            logging.error(f"The field {self.recipient_mapping_message_field} could not be found in the message")
+            return False
+        topic_message = self.make_topic_msg(recipient_mapping_field_message, html_body, subject)
+        if not topic_message:
+            logging.error("Topic message was not made")
+            return False
         # Make gobits
         gobits = Gobits()
         # Send message to topic
@@ -43,19 +59,48 @@ class MessageProcessor(object):
             logging.info("Message was processed")
         return True
 
-    def make_topic_msg(self, body, subject):
+    def make_topic_msg(self, recipient_mapping_field_message, body, subject):
         now = datetime.datetime.now()
         now_iso = now.isoformat()
+        recipient = self.get_recipient(recipient_mapping_field_message)
+        if not recipient:
+            logging.error("Something went wrong in getting the recipient from the Firestore")
+            return None
         message = {
             "sent_on": now_iso,
             "received_on": "",
             "sender": self.sender,
-            "recipient": self.recipient,
+            "recipient": recipient,
             "subject": subject,
             "body": body,
             "attachments": []
         }
         return message
+
+    def get_recipient(self, recipient_mapping_field):
+        recipient_dict = self.recipient_mapping.get(recipient_mapping_field)
+        if not recipient_dict:
+            logging.error(f"No recipient dictionary belonging to field {recipient_mapping_field}"
+                          " could be found in 'recipient_mapping' in config")
+            return None
+        collection_name = recipient_dict.get("firestore_collection_name")
+        if not collection_name:
+            logging.error("'firestore_collection_name' not defined in recipient mapping in config")
+            return None
+        firestore_ids = recipient_dict.get("firestore_ids")
+        if not firestore_ids:
+            logging.error("'firestore_ids' not defined in recipient mapping in config")
+            return None
+        firestore_value = recipient_dict.get("firestore_value")
+        if not firestore_value:
+            logging.error("'firestore_value' not defined in recipient mapping in config")
+            return None
+        succeeded, fs_value = self.gcp_firestore.get_value(collection_name, firestore_ids,
+                                                           firestore_value)
+        if succeeded:
+            return fs_value
+        logging.error("Recipient could not be found based on recipient mapping defined in config")
+        return None
 
     def message_to_html(self, message):
         if not self.html_template_paths:
