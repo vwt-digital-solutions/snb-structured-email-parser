@@ -9,7 +9,8 @@ This function consumes messages containing e-mails posted on a Pub/Sub Topic, pa
     TEMPLATE_PATH_FIELD = The field which can have as value one of the fields in HTML_TEMPLATE_PATHS
     TEMPLATE_PATH_FIELD_ROOT = Optional to add the root where the field can be found
     HTML_TEMPLATE_PATHS = Dictionary containing as its fields the values the TEMPLATE_PATH_FIELD can take
-    RECIPIENT = Email address of the recipient
+    RECIPIENT_MAPPING_MESSAGE_FIELD = Field in the message to look up the right dictionary in RECIPIENT_MAPPING
+    RECIPIENT_MAPPING = Dictionary where the mail recipient can be looked up from using the Google Cloud Platform (GCP) Firestore
     SENDER = Email address of the sender
     ~~~
 2. Make sure the following variables are present in the environment:
@@ -87,6 +88,27 @@ The HTML templates should be templates in HTML. An example:
 </div>
 ~~~
 Where the value of ```package_number``` can be given with the field ```template_args```.
+
+## Firestore recipient mapping
+The dictionary given in the parameter ```RECIPIENT_MAPPING``` shows what e-mail address the mail should be send to.  
+It looks as follows:  
+~~~JSON
+{
+    "message_value": {
+        "firestore_collection_name": "firestore_collection_name_1",
+        "firestore_ids": [
+            {"firestore_field_1": "firestore_value_1"},
+            {"firestore_field_2": "firestore_value_2"},
+            {"firestore_field_etcetera": "firestore_value_etcetera"},
+        ],
+        "firestore_value": "firestore_field"
+    }
+}
+~~~
+Where ```message_value``` is the value of the field defined in ```RECIPIENT_MAPPING_MESSAGE_FIELD```, which is looked up in the incoming message.  
+```firestore_collection_name``` is the collection in the firestore where the code should look.  
+```firestore_ids``` contain a list of dictionaries with as their field the firestore field which should fit the accompanying firestore value. They are the IDs that are used to look up the right value.  
+The value defined for ```firestore_value``` is the field that gives the recipient, which is thus looked up by the right IDs.
 
 ## Incoming message
 To make sure the function works according to the way it was intented, the incoming messages from a Pub/Sub Topic must have the following structure based on the [company-data structure](https://vwt-digital.github.io/project-company-data.github.io/v1.1/schema):

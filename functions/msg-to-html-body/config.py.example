@@ -43,5 +43,16 @@ HTML_TEMPLATE_PATHS = {
         }
     }
 }
-RECIPIENT="recipient-email-address"
+RECIPIENT_MAPPING_MESSAGE_FIELD = "incoming message field"
+RECIPIENT_MAPPING = {
+    "message_value": {
+        "firestore_collection_name": "firestore_collection_name_1",
+        "firestore_ids": [
+            {"firestore_field_1": "firestore_value_1"},
+            {"firestore_field_2": "firestore_value_2"},
+            {"firestore_field_etcetera": "firestore_value_etcetera"},
+        ],
+        "firestore_value": "firestore_field"
+    }
+}
 SENDER="sender-email-address"
