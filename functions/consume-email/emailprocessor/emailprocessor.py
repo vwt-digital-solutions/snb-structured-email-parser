@@ -1,4 +1,4 @@
-from config import SENDER, ID, REQUIRED_FIELDS, TOPIC_NAME, TOPIC_PROJECT_ID
+from config import SENDERS, ID, REQUIRED_FIELDS, TOPIC_NAME, TOPIC_PROJECT_ID
 import logging
 import json
 from gobits import Gobits
@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 class EmailProcessor(object):
 
     def __init__(self):
-        self.sender = SENDER
+        self.senders = SENDERS
         self.required_fields = REQUIRED_FIELDS
         self.topic_project_id = TOPIC_PROJECT_ID
         self.topic_name = TOPIC_NAME
@@ -29,7 +29,7 @@ class EmailProcessor(object):
         date = ""
         if "Datum" in mail:
             date = mail["Datum"]
-        if mail_sender != self.sender:
+        if mail_sender not in self.senders:
             if date:
                 logging.info("Mail received on {} was not send by the right e-mail address".format(date))
                 return False
