@@ -13,7 +13,6 @@ grpcio==1.35.0
 httplib2==0.19.0
 idna==2.10
 packaging==20.9
-pkg-resources==0.0.0
 protobuf==3.15.5
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
