@@ -1,0 +1,10 @@
+GMAIL_SERVICE_ACCOUNT = "gcp-service-account-with-gmail-scopes"
+GMAIL_SUBJECT_ADDRESS = "mail-address-to-send-from"
+GMAIL_REPLYTO_ADDRESS = "mail-address-shown-as-sender"
+GMAIL_SCOPES = ["gmail-scope"]
+MAIL_ADDRESSES = [
+	"mail-address-to-send-to-1",
+	"mail-address-to-send-to-2",
+	"mail-address-to-send-to-etcetera"
+]
+SUBJECT = "mail-subject"

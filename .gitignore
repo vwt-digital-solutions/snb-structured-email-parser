@@ -3,6 +3,8 @@
 .vscode/
 main-test.py
 functions/msg-to-html-body/templates
+chain_test/mail_template.html
+chain_test/chain_test.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
