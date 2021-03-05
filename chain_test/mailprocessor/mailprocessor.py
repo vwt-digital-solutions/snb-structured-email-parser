@@ -61,7 +61,7 @@ class MailProcessor(object):
         try:
             mail_body = self.generate_mail(mail_template)
             message = (self.mail_service.users().messages().send(userId="me", body=mail_body).execute())
-            logging.info(f"Email '{message['id']}' has been sent to {len(self.mail_addresses)} recipients")
+            logging.info("Email '{}' has been sent to {} recipients".format(message['id'], len(self.mail_addresses)))
             return True
         except errors.HttpError as e:
             logging.error('An exception occurred when sending an email: {}'.format(e))

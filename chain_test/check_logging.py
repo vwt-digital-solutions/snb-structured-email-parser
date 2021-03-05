@@ -21,7 +21,7 @@ def request_log(cloud_logger, project_id, function_name):
     # Get all logs with the log filter
     entries = cloud_logger.list_entries(
         filter_=log_filter, order_by=cloud_logging.DESCENDING,
-        resource_names=[f"projects/{project_id}"])
+        resource_names=["projects/{}".format(project_id)])
 
     return entries
 
@@ -35,7 +35,7 @@ def time_format(dt):
 
 
 def logging_check(function_name, logging_message, max_execution_time):
-    logging.info(f"Checking logs for message '{logging_message}'")
+    logging.info("Checking logs for message '{}'".format(logging_message))
     # First wait on the execution of the function that puts XML files on Azure
     cloud_client = cloud_logging.Client()
     log_name = 'cloudfunctions.googleapis.com%2Fcloud-functions'
@@ -74,10 +74,10 @@ def logging_check(function_name, logging_message, max_execution_time):
             if finished:
                 # Check if the function logged the right message as last
                 if(logging_message in entries_list[0]):
-                    logging.info(f"Last message in logging was '{logging_message}'")
+                    logging.info("Last message in logging was '{}'".format(logging_message))
                     finished = True
                 else:
-                    logging.info(f"Last message in logging was not '{logging_message}'")
+                    logging.info("Last message in logging was not '{}'".format(logging_message))
                     finished = False
             # If logs have been found
             if entries_list and finished:
@@ -99,6 +99,6 @@ if __name__ == '__main__':
     max_execution_time = args.execution_time
     check_logging_bool = logging_check(function_name, logging_message, int(max_execution_time))
     if check_logging_bool is False:
-        logging.error(f"The logging message '{logging_message}' could not be found within {max_execution_time} seconds")
+        logging.error("The logging message '{}' could not be found within {} seconds".format(logging_message, max_execution_time))
         sys.exit(1)
     logging.info("Logging was found")
