@@ -1,22 +1,25 @@
-from config import TOPIC_PROJECT_ID, TOPIC_NAME, HTML_TEMPLATE_PATHS, \
-                   TEMPLATE_PATH_FIELD, RECIPIENT_MAPPING_MESSAGE_FIELD, \
-                   RECIPIENT_MAPPING, SENDER
-import logging
-import json
-import os
-from jinja2 import Template
 import datetime
+import json
+import logging
+import os
+
+from config import (HTML_TEMPLATE_PATHS, RECIPIENT_MAPPING,
+                    RECIPIENT_MAPPING_MESSAGE_FIELD, SENDER,
+                    TEMPLATE_PATH_FIELD, TOPIC_NAME, TOPIC_PROJECT_ID)
 from gobits import Gobits
 from google.cloud import pubsub_v1
+from jinja2 import Template
+
 from .firestoreprocessor import FirestoreProcessor
 
 logging.basicConfig(level=logging.INFO)
 
 
 class MessageProcessor(object):
-
     def __init__(self):
-        self.data_selector = os.environ.get('DATA_SELECTOR', 'Required environment variable DATA_SELECTOR is missing')
+        self.data_selector = os.environ.get(
+            "DATA_SELECTOR", "Required environment variable DATA_SELECTOR is missing"
+        )
         self.topic_project_id = TOPIC_PROJECT_ID
         self.topic_name = TOPIC_NAME
         self.html_template_field = TEMPLATE_PATH_FIELD
@@ -43,11 +46,17 @@ class MessageProcessor(object):
             logging.error("Message has multiple roots")
             return False
         recipient_mapping_field_dict = message.get(message_root)
-        recipient_mapping_field_message = recipient_mapping_field_dict.get(self.recipient_mapping_message_field)
+        recipient_mapping_field_message = recipient_mapping_field_dict.get(
+            self.recipient_mapping_message_field
+        )
         if not recipient_mapping_field_message:
-            logging.error(f"The field {self.recipient_mapping_message_field} could not be found in the message")
+            logging.error(
+                f"The field {self.recipient_mapping_message_field} could not be found in the message"
+            )
             return False
-        topic_message = self.make_topic_msg(recipient_mapping_field_message, html_body, subject)
+        topic_message = self.make_topic_msg(
+            recipient_mapping_field_message, html_body, subject
+        )
         if not topic_message:
             logging.error("Topic message was not made")
             return False
@@ -67,7 +76,9 @@ class MessageProcessor(object):
         now_iso = now.isoformat()
         recipient = self.get_recipient(recipient_mapping_field_message)
         if not recipient:
-            logging.error("Something went wrong in getting the recipient from the Firestore")
+            logging.error(
+                "Something went wrong in getting the recipient from the Firestore"
+            )
             return None
         message = {
             "sent_on": now_iso,
@@ -76,19 +87,23 @@ class MessageProcessor(object):
             "recipient": recipient,
             "subject": subject,
             "body": body,
-            "attachments": []
+            "attachments": [],
         }
         return message
 
     def get_recipient(self, recipient_mapping_field):
         recipient_dict = self.recipient_mapping.get(recipient_mapping_field)
         if not recipient_dict:
-            logging.error(f"No recipient dictionary belonging to field {recipient_mapping_field}"
-                          " could be found in 'recipient_mapping' in config")
+            logging.error(
+                f"No recipient dictionary belonging to field {recipient_mapping_field}"
+                " could be found in 'recipient_mapping' in config"
+            )
             return None
         collection_name = recipient_dict.get("firestore_collection_name")
         if not collection_name:
-            logging.error("'firestore_collection_name' not defined in recipient mapping in config")
+            logging.error(
+                "'firestore_collection_name' not defined in recipient mapping in config"
+            )
             return None
         firestore_ids = recipient_dict.get("firestore_ids")
         if not firestore_ids:
@@ -96,13 +111,18 @@ class MessageProcessor(object):
             return None
         firestore_value = recipient_dict.get("firestore_value")
         if not firestore_value:
-            logging.error("'firestore_value' not defined in recipient mapping in config")
+            logging.error(
+                "'firestore_value' not defined in recipient mapping in config"
+            )
             return None
-        succeeded, fs_value = self.gcp_firestore.get_value(collection_name, firestore_ids,
-                                                           firestore_value)
+        succeeded, fs_value = self.gcp_firestore.get_value(
+            collection_name, firestore_ids, firestore_value
+        )
         if succeeded:
             return fs_value
-        logging.error("Recipient could not be found based on recipient mapping defined in config")
+        logging.error(
+            "Recipient could not be found based on recipient mapping defined in config"
+        )
         return None
 
     def message_to_html(self, message):
@@ -129,11 +149,13 @@ class MessageProcessor(object):
             return None, None
         # Get the right template
         temp_info = self.html_template_paths.get(temp_msg_field)
-        template_path = temp_info.get('template_path')
+        template_path = temp_info.get("template_path")
         if not template_path:
-            logging.error(f"Template paths in config do not have field {temp_msg_field}")
+            logging.error(
+                f"Template paths in config do not have field {temp_msg_field}"
+            )
             return None, None
-        template_args = temp_info.get('template_args')
+        template_args = temp_info.get("template_args")
         kwargs = {}
         for arg_field in template_args:
             # Get value
@@ -148,14 +170,18 @@ class MessageProcessor(object):
                     arg_value_format = arg_field_values.get("arg_field_format")
                     if arg_value_format:
                         if arg_value_format == "DATETIME":
-                            arg_value = datetime.datetime.strptime(arg_value, '%Y%m%d%H%M%S')
+                            arg_value = datetime.datetime.strptime(
+                                arg_value, "%Y%m%d%H%M%S"
+                            )
                 kwargs.update({arg_field: arg_value})
         with open(template_path) as file_:
             template = Template(file_.read())
         body = template.render(kwargs)
-        mail_subject = temp_info.get('mail_subject')
+        mail_subject = temp_info.get("mail_subject")
         if not mail_subject:
-            logging.error(f"Field mail_subject could not be found in field {temp_msg_field}")
+            logging.error(
+                f"Field mail_subject could not be found in field {temp_msg_field}"
+            )
             return None, None
         # Get subject
         subject = ""
@@ -172,28 +198,30 @@ class MessageProcessor(object):
                 to_add = subject_msg_field
             # If subject is not empty
             if subject:
-                subject = f"{subject} {to_add}"
+                subject = f"{subject}{to_add}"
             else:
                 subject = to_add
         return body, subject
 
     def publish_to_topic(self, subject, message, gobits):
-        msg = {
-            "gobits": [gobits.to_json()],
-            "email": message
-        }
+        msg = {"gobits": [gobits.to_json()], "email": message}
         try:
             # Publish to topic
             publisher = pubsub_v1.PublisherClient()
             topic_path = "projects/{}/topics/{}".format(
-                self.topic_project_id, self.topic_name)
+                self.topic_project_id, self.topic_name
+            )
             future = publisher.publish(
-                topic_path, bytes(json.dumps(msg).encode('utf-8')))
+                topic_path, bytes(json.dumps(msg).encode("utf-8"))
+            )
             future.add_done_callback(
-                lambda x: logging.debug('Published to export email with subject {}'.format(subject))
+                lambda x: logging.debug(
+                    "Published to export email with subject {}".format(subject)
+                )
             )
             return True
         except Exception as e:
-            logging.exception('Unable to publish parsed email ' +
-                              'to topic because of {}'.format(e))
+            logging.exception(
+                "Unable to publish parsed email " + "to topic because of {}".format(e)
+            )
         return False
