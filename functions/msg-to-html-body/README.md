@@ -4,6 +4,7 @@ This function consumes messages containing e-mails posted on a Pub/Sub Topic, pa
 ## Setup
 1. Make sure a ```config.py``` file exists within the directory, based on the [config.example.py](config.example.py), with the correct configuration:
     ~~~
+    DEBUG_LOGGING = Set this to True if you want the debugging logging to show
     TOPIC_NAME = Topic where the email should be send to
     TOPIC_PROJECT_ID = Project id where the topic is
     TEMPLATE_PATH_FIELD = The field which can have as value one of the fields in HTML_TEMPLATE_PATHS
