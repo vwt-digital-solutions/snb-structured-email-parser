@@ -75,8 +75,13 @@ class EmailProcessor(object):
                 # Remove '&nbsp;' from line
                 if "&nbsp;" in line:
                     line = line.replace("&nbsp;", " ")
-                # Split the line on ': <<'
-                line_list = line.split(": &lt;&lt;")
+                # If line ends with '&lt;&lt;'
+                if str(line).endswith("&lt;&lt; ") or str(line).endswith("&lt;&lt;"):
+                    # Split the line on ': <<'
+                    line_list = line.split(":")
+                else:
+                    # Split the line on ': <<'
+                    line_list = line.split(": &lt;&lt;")
                 # The first value of the line is the field
                 field = line_list.pop(0)
                 # Check if the field can be found in the required fields

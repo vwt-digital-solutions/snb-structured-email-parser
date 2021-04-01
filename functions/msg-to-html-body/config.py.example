@@ -1,3 +1,4 @@
+DEBUG_LOGGING = True or False
 TOPIC_NAME = "topic-name"
 TOPIC_PROJECT_ID = "topic-project-id"
 TEMPLATE_PATH_FIELD = "the field which can have as value one of the fields in HTML_TEMPLATE_PATHS"
