@@ -1,3 +1,5 @@
+DEBUG_LOGGING = True or False
+
 SENDER = "e-mail address where e-mails should come from"
 
 ID = ["e-mail-field1", "e-mail-field2", "etcetera"]

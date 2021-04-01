@@ -4,6 +4,7 @@ This function consumes messages containing e-mails posted on a Pub/Sub Topic, pa
 ## Setup
 1. Make sure a ```config.py``` file exists within the directory, based on the [config.example.py](config.example.py), with the correct configuration:
     ~~~
+    DEBUG_LOGGING = Set this to True if you want the debugging logging to show
     SENDER = E-mail address where e-mails should come from
     ID = A list containing e-mail fields where the ID of the message can be build from
     REQUIRED_FIELDS = The fields that should be gotten from the e-mail and send to a topic
