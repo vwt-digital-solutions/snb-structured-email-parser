@@ -42,7 +42,8 @@ class MessageProcessor(object):
         for field in message:
             message_root = field
             count = count + 1
-        if count > 1:
+        count_bool = count > 1
+        if count_bool:
             logging.error("Message has multiple roots")
             return False
         recipient_mapping_field_dict = message.get(message_root)
@@ -129,18 +130,9 @@ class MessageProcessor(object):
         if not self.html_template_paths:
             logging.error("HTML template path is not defined in config")
             return None, None
-        message_after_root = {}
-        count = 0
         # Get part of message after the root
-        for after_root in message:
-            if isinstance(message[after_root], dict):
-                message_after_root = message[after_root]
-            count = count + 1
-        if count > 1:
-            logging.error("The message contains multiple roots")
-            return None, None
+        message_after_root = self.get_part_after_root(message)
         if not message_after_root:
-            logging.error("The message does not contain a root")
             return None, None
         # Get message field
         temp_msg_field = message_after_root.get(self.html_template_field)
@@ -148,14 +140,41 @@ class MessageProcessor(object):
             logging.error("Could not get right message field to get template")
             return None, None
         # Get the right template
-        temp_info = self.html_template_paths.get(temp_msg_field)
-        template_path = temp_info.get("template_path")
+        template_info = self.html_template_paths.get(temp_msg_field)
+        body = self.get_template(
+            message_after_root, template_info, temp_msg_field, message
+        )
+        if not body:
+            return None, None
+        # Get subject
+        subject = self.get_subject(template_info, temp_msg_field, message_after_root)
+        if not subject:
+            return None, None
+        return body, subject
+
+    def get_part_after_root(self, message):
+        message_after_root = {}
+        count = 0
+        for after_root in message:
+            if isinstance(message[after_root], dict):
+                message_after_root = message[after_root]
+            count = count + 1
+        if count > 1:
+            logging.error("The message contains multiple roots")
+            return {}
+        if not message_after_root:
+            logging.error("The message does not contain a root")
+            return {}
+        return message_after_root
+
+    def get_template(self, message_after_root, template_info, temp_msg_field, message):
+        template_path = template_info.get("template_path")
         if not template_path:
             logging.error(
                 f"Template paths in config do not have field {temp_msg_field}"
             )
-            return None, None
-        template_args = temp_info.get("template_args")
+            return None
+        template_args = template_info.get("template_args")
         kwargs = {}
         for arg_field in template_args:
             # Get value
@@ -177,13 +196,15 @@ class MessageProcessor(object):
         with open(template_path) as file_:
             template = Template(file_.read())
         body = template.render(kwargs)
-        mail_subject = temp_info.get("mail_subject")
+        return body
+
+    def get_subject(self, template_info, temp_msg_field, message_after_root):
+        mail_subject = template_info.get("mail_subject")
         if not mail_subject:
             logging.error(
                 f"Field mail_subject could not be found in field {temp_msg_field}"
             )
-            return None, None
-        # Get subject
+            return ""
         subject = ""
         for field in mail_subject:
             to_add = ""
@@ -194,14 +215,14 @@ class MessageProcessor(object):
                 # Check if subject field is found
                 if not subject_msg_field:
                     logging.error(f"Field {field} could not be found in message")
-                    return None, None
+                    return ""
                 to_add = subject_msg_field
             # If subject is not empty
             if subject:
                 subject = f"{subject}{to_add}"
             else:
                 subject = to_add
-        return body, subject
+        return subject
 
     def publish_to_topic(self, subject, message, gobits):
         msg = {"gobits": [gobits.to_json()], "email": message}
