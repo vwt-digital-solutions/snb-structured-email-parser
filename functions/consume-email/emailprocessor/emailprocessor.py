@@ -49,12 +49,36 @@ class EmailProcessor(object):
         ):
             logging.info("Required tags cannot be found in HTML body")
             return False
-        # Get part before table
+        # Get list from above table
         html_above_table = html_content.split("<table>")[0]
+        html_above_table_list = self.get_part_above_table_list(html_above_table)
+        if not html_above_table_list:
+            return False
+        # Add the fields from above the table of the HTML to the message
+        new_message = self.add_fields_not_table(html_above_table_list)
+        # HTML to parse-able content
+        parsed_html = BeautifulSoup(html_content, "html.parser")
+        # Add fields from the table in the HTML to the message
+        new_message = self.add_fields_table(parsed_html, new_message)
+        # Make sure that every required field is added
+        new_message = self.required_fields_check(new_message)
+        if not new_message:
+            return False
+        # Add an ID
+        new_message = self.add_id(mail, new_message)
+        if not new_message:
+            return False
+        metadata = Gobits()
+        return_bool_publish_topic = self.publish_to_topic(new_message, metadata)
+        if not return_bool_publish_topic:
+            return False
+        return True
+
+    def get_part_above_table_list(self, html_above_table):
         # Check if the part is not empty
         if not html_above_table:
             logging.info("HTML body does not have the required structure")
-            return False
+            return []
         html_above_table_list = html_above_table.split("\n")
         # If the length is 1
         if len(html_above_table_list) == 1:
@@ -63,7 +87,10 @@ class EmailProcessor(object):
         # If the length is empty
         if not html_above_table_list:
             logging.error("There should be apart above the table in the email")
-            return False
+            return []
+        return html_above_table_list
+
+    def add_fields_not_table(self, html_above_table_list):
         # The new json to be send
         new_message = {}
         # For every line in the part above the table
@@ -101,8 +128,9 @@ class EmailProcessor(object):
                         value = value.replace(" ", "", 1)
             if field:
                 new_message = self.add_field(field, value, new_message)
-        # HTML to parse-able content
-        parsed_html = BeautifulSoup(html_content, "html.parser")
+        return new_message
+
+    def add_fields_table(self, parsed_html, new_message):
         # Get table part
         table = parsed_html.table
         # Get values from the table
@@ -118,7 +146,9 @@ class EmailProcessor(object):
             value = td_list[1].get_text()
             if field:
                 new_message = self.add_field(field, value, new_message)
-        # Check if every required field was added
+        return new_message
+
+    def required_fields_check(self, new_message):
         added_field_count = 0
         for field in self.required_fields:
             field = field.replace(" ", "_")
@@ -130,8 +160,10 @@ class EmailProcessor(object):
         # Check if added fields are not equal to all the fields
         if added_field_count is len(self.required_fields):
             logging.info("HTML body does not contain any of the required fields")
-            return False
-        # Add an ID
+            return {}
+        return new_message
+
+    def add_id(self, mail, new_message):
         received_on_list = mail["received_on"].split("+")
         received_on = received_on_list[0]
         received_on = received_on.replace(":", "-")
@@ -148,10 +180,10 @@ class EmailProcessor(object):
                     ticket_nr = ticket_nr + subject_mail[ch]
         if "Ticket#" not in ticket_nr:
             logging.info("The ticket number cannot be found in the e-mail")
-            return False
+            return {}
         if not new_message[self.parsed_email_id]:
             logging.error(f"ID {self.parsed_email_id} is empty in message")
-            return False
+            return {}
         new_message.update(
             {
                 "id": "{}_{}_{}".format(
@@ -159,11 +191,7 @@ class EmailProcessor(object):
                 )
             }
         )
-        metadata = Gobits()
-        return_bool_publish_topic = self.publish_to_topic(new_message, metadata)
-        if not return_bool_publish_topic:
-            return False
-        return True
+        return new_message
 
     def add_field(self, field, value, message):
         if field in self.required_fields:
