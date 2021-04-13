@@ -2,7 +2,8 @@ import json
 import logging
 
 from bs4 import BeautifulSoup
-from config import ID, REQUIRED_FIELDS, SENDERS, TOPIC_NAME, TOPIC_PROJECT_ID
+from config import (ID, NEEDED_ID_VALUE, REQUIRED_FIELDS, SENDERS, TOPIC_NAME,
+                    TOPIC_PROJECT_ID)
 from gobits import Gobits
 from google.cloud import pubsub_v1
 
@@ -16,6 +17,8 @@ class EmailProcessor(object):
         self.topic_project_id = TOPIC_PROJECT_ID
         self.topic_name = TOPIC_NAME
         self.parsed_email_id = "".join(ID)
+        self.id = ID
+        self.needed_id_vaue = NEEDED_ID_VALUE
 
     def process(self, payload):
         mail = payload["email"]
@@ -63,6 +66,9 @@ class EmailProcessor(object):
         # Make sure that every required field is added
         new_message = self.required_fields_check(new_message)
         if not new_message:
+            return False
+        # Check if ID is correct
+        if self.id_check(new_message) is False:
             return False
         # Add an ID
         new_message = self.add_id(mail, new_message)
@@ -162,6 +168,20 @@ class EmailProcessor(object):
             logging.info("HTML body does not contain any of the required fields")
             return {}
         return new_message
+
+    def id_check(self, new_message):
+        id_value = ""
+        for an_id in self.id:
+            id_value = new_message.get(an_id, "")
+        if not id_value:
+            logging.info(f"ID {self.id} cannot be found in message")
+            return False
+        if id_value != self.needed_id_vaue:
+            logging.info(
+                f"ID {self.id} found in message does not have the right value defined in the config"
+            )
+            return False
+        return True
 
     def add_id(self, mail, new_message):
         received_on_list = mail["received_on"].split("+")
