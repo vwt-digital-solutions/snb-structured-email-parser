@@ -28,7 +28,7 @@ def email_parser(request):
         subscription = envelope["subscription"].split("/")[-1]
         log(
             f"Message received from {subscription} [{payload}]",
-            f"Message received from {subscription} [{payload}]",
+            f"Message received from {subscription}",
         )
 
         parser.process(json.loads(payload))
