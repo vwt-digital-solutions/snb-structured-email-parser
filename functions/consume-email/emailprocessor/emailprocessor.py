@@ -30,8 +30,8 @@ class EmailProcessor(object):
     def process_mail(self, mail):
         mail_sender = mail["sender"]
         date = ""
-        if "Datum" in mail:
-            date = mail["Datum"]
+        if "received_on" in mail:
+            date = mail["received_on"]
         if mail_sender not in self.senders:
             if date:
                 logging.info(
@@ -241,8 +241,8 @@ class EmailProcessor(object):
 
     def publish_to_topic(self, message, gobits):
         date = ""
-        if "Datum" in message:
-            date = message["Datum"]
+        if "received_on" in message:
+            date = message["received_on"]
         msg = {"gobits": [gobits.to_json()], "parsed_email": message}
         try:
             # Publish to topic
@@ -260,6 +260,7 @@ class EmailProcessor(object):
                     )
                 )
             future.add_done_callback(lambda x: logging.debug("Published parsed email"))
+            logging.info(f"Publishing email with ID {message['id']}")
             return True
         except Exception as e:
             logging.exception(
