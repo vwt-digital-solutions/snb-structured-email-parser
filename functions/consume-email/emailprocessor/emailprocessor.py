@@ -18,7 +18,7 @@ class EmailProcessor(object):
         self.topic_name = TOPIC_NAME
         self.parsed_email_id = "".join(ID)
         self.id = ID
-        self.needed_id_vaue = NEEDED_ID_VALUE
+        self.needed_id_value = NEEDED_ID_VALUE
 
     def process(self, payload):
         mail = payload["email"]
@@ -176,7 +176,7 @@ class EmailProcessor(object):
         if not id_value:
             logging.info(f"ID {self.id} cannot be found in message")
             return False
-        if id_value != self.needed_id_vaue:
+        if id_value != self.needed_id_value:
             logging.info(
                 f"ID {self.id} found in message does not have the right value defined in the config"
             )
