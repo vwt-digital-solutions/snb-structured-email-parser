@@ -144,12 +144,17 @@ class EmailProcessor(object):
         for line in lines:
             # Split on tag 'td'
             td_list = line.find_all("td")
-            # Field
-            field = td_list[0].get_text()
-            # Split field on ':' and get first value
-            field = field.split(":")[0]
+            field = None
+            if len(td_list) > 0:
+                # Field
+                field = td_list[0].get_text()
+                # Split field on ':' and get first value
+                if ':' in field:
+                    field = field.split(":")[0]
             # value
-            value = td_list[1].get_text()
+            value = ""
+            if len(td_list) > 1:
+                value = td_list[1].get_text()
             if field:
                 new_message = self.add_field(field, value, new_message)
         return new_message
