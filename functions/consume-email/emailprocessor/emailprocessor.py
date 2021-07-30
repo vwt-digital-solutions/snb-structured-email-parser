@@ -269,6 +269,6 @@ class EmailProcessor(object):
             return True
         except Exception as e:
             logging.exception(
-                "Unable to publish parsed email " + "to topic because of {}".format(e)
+                "Unable to publish parsed email to topic because of {}".format(e)
             )
         return False
