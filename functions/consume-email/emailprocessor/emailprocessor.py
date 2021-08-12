@@ -18,7 +18,7 @@ class EmailProcessor(object):
         self.topic_name = TOPIC_NAME
         self.parsed_email_id = "".join(ID)
         self.id = ID
-        self.needed_id_vaue = NEEDED_ID_VALUE
+        self.needed_id_value = NEEDED_ID_VALUE
 
     def process(self, payload):
         mail = payload["email"]
@@ -144,12 +144,17 @@ class EmailProcessor(object):
         for line in lines:
             # Split on tag 'td'
             td_list = line.find_all("td")
-            # Field
-            field = td_list[0].get_text()
-            # Split field on ':' and get first value
-            field = field.split(":")[0]
+            field = None
+            if len(td_list) > 0:
+                # Field
+                field = td_list[0].get_text()
+                # Split field on ':' and get first value
+                if ":" in field:
+                    field = field.split(":")[0]
             # value
-            value = td_list[1].get_text()
+            value = ""
+            if len(td_list) > 1:
+                value = td_list[1].get_text()
             if field:
                 new_message = self.add_field(field, value, new_message)
         return new_message
@@ -176,7 +181,7 @@ class EmailProcessor(object):
         if not id_value:
             logging.info(f"ID {self.id} cannot be found in message")
             return False
-        if id_value != self.needed_id_vaue:
+        if id_value != self.needed_id_value:
             logging.info(
                 f"ID {self.id} found in message does not have the right value defined in the config"
             )
@@ -264,6 +269,6 @@ class EmailProcessor(object):
             return True
         except Exception as e:
             logging.exception(
-                "Unable to publish parsed email " + "to topic because of {}".format(e)
+                "Unable to publish parsed email to topic because of {}".format(e)
             )
         return False
