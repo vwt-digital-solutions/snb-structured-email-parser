@@ -1,5 +1,5 @@
 # Consume Email
-This function consumes messages containing e-mails posted on a Pub/Sub Topic, parses them and sends them to another topic.
+This function consumes JSON messages, fills the fields into a HTML template, and sends the HTML template via a JSON message to another topic.
 
 ## Setup
 1. Make sure a ```config.py``` file exists within the directory, based on the [config.example.py](config.example.py), with the correct configuration:
