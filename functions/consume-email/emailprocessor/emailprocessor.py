@@ -32,7 +32,7 @@ class EmailProcessor(object):
         date = ""
         if "received_on" in mail:
             date = mail["received_on"]
-        if mail_sender not in self.senders:
+        if mail_sender.lower() not in self.senders:
             if date:
                 logging.info(
                     "Mail received on {} was not send by the right e-mail address".format(
@@ -149,7 +149,7 @@ class EmailProcessor(object):
                 # Field
                 field = td_list[0].get_text()
                 # Split field on ':' and get first value
-                if ':' in field:
+                if ":" in field:
                     field = field.split(":")[0]
             # value
             value = ""
