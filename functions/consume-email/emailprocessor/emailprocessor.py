@@ -35,8 +35,8 @@ class EmailProcessor(object):
         if mail_sender.lower() not in self.senders:
             if date:
                 logging.info(
-                    "Mail received on {} was not send by the right e-mail address".format(
-                        date
+                    "Mail received on {} was not send by the right e-mail address ({})".format(
+                        date, mail_sender.lower()
                     )
                 )
                 return False
