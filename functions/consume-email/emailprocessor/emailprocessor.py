@@ -181,7 +181,7 @@ class EmailProcessor(object):
         if not id_value:
             logging.info(f"ID {self.id} cannot be found in message")
             return False
-        if id_value != self.needed_id_value:
+        if id_value not in self.needed_id_value:
             logging.info(
                 f"ID {self.id} found in message does not have the right value defined in the config"
             )
