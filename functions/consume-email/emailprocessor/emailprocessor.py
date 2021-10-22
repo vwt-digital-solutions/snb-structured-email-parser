@@ -35,8 +35,8 @@ class EmailProcessor(object):
         if mail_sender.lower() not in self.senders:
             if date:
                 logging.info(
-                    "Mail received on {} was not send by the right e-mail address".format(
-                        date
+                    "Mail received on {} was not send by the right e-mail address ({})".format(
+                        date, mail_sender.lower()
                     )
                 )
                 return False
@@ -181,7 +181,7 @@ class EmailProcessor(object):
         if not id_value:
             logging.info(f"ID {self.id} cannot be found in message")
             return False
-        if id_value != self.needed_id_value:
+        if id_value not in self.needed_id_value:
             logging.info(
                 f"ID {self.id} found in message does not have the right value defined in the config"
             )
