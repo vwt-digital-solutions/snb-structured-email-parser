@@ -27,10 +27,46 @@ class EmailProcessor(object):
 
     def process(self, payload):
         mail = payload["email"]
-        if self.process_mail(mail) is False:
+        if self._process_mail(mail) is False:
             logging.info("Message not processed")
         else:
             logging.info("Message is processed")
+
+    def _process_mail(self, mail) -> bool:
+        mail_sender = mail["sender"].lower()
+
+        if mail_sender not in SENDER_WHITELIST:
+            date = mail.get("received_on", "")
+            logging.error(
+                f"E-mail received on {str(date)} was not send by a whitelisted e-mail address ({mail_sender})."
+            )
+            return False
+
+        html_content = mail["body"]
+        mail_variables = self._parse_structured_mail(html_content)
+
+        # Checking if all configured fields are present.
+        all_fields_present = True
+        for field in FIELDS:
+            if field not in mail_variables:
+                all_fields_present = False
+                logging.error(f"Field '{field}' was not found in e-mail data.")
+
+        if not all_fields_present:
+            return False
+
+        mail_type = mail_variables[TYPE_FIELD]
+        if mail_type not in ALLOWED_TYPES:
+            logging.error(f"'{mail_type}' is not an allowed type.")
+            return False
+
+        # Filter to only send specified fields.
+        mail_variables = {field: value for field, value in mail_variables.items() if field in FIELDS}
+
+        mail_variables["id"] = self._generate_id(mail, mail_type)
+
+        metadata = Gobits()
+        return self._publish_to_topic(mail_variables, metadata)
 
     def _parse_structured_mail(self, html_text_raw: str) -> dict:
         """
@@ -44,28 +80,28 @@ class EmailProcessor(object):
         html_content = BeautifulSoup(html_text_raw, "html.parser")
         html_text_rendered = html_content.get_text()
 
-        headers = self._get_field_value_pairs(html_text_rendered)
-        table = self._get_html_table_contents(html_content)
+        headers = self._get_headers(html_text_rendered)
+        table_contents = self._get_html_table_contents(html_content)
 
         # Merging data, and transforming field names.
-        variables = self._merge_dictionaries(headers, table)
+        variables = self._merge_dictionaries(headers, table_contents)
         variables = {field.lower().replace(" ", "_"): value for field, value in variables.items()}
 
         return variables
 
-    def _get_field_value_pairs(self, string: str) -> dict:
+    def _get_headers(self, string: str) -> dict:
         """
-        Extracts field-value pairs from string.
+        Extracts field-value pairs from headers in string.
 
-        Example of field-value structure:
+        Example of header structure:
         field: <<value>>
         multi_line: <<Line 1
         Line 2
         Line 3>>
 
-        :param string: Plain text containing field-value pairs
+        :param string: Plain text containing headers
         :type string: str
-        :return: A dictionary with all field-value pairs.
+        :return: A dictionary with all field-value pairs from found headers.
         :rtype: dict
         """
         values = dict()
@@ -169,39 +205,6 @@ class EmailProcessor(object):
         string = string.strip()
 
         return string
-
-    def process_mail(self, mail) -> bool:
-        mail_sender = mail["sender"].lower()
-
-        if mail_sender not in SENDER_WHITELIST:
-            date = mail.get("received_on", "")
-            logging.error(
-                f"E-mail received on {str(date)} was not send by a whitelisted e-mail address ({mail_sender})."
-            )
-            return False
-
-        html_content = mail["body"]
-        structured_mail_variables = self._parse_structured_mail(html_content)
-
-        # Checking if all configured fields are present.
-        all_fields_present = True
-        for field in FIELDS:
-            if field not in structured_mail_variables:
-                all_fields_present = False
-                logging.error(f"Field '{field}' was not found in e-mail data.")
-
-        if not all_fields_present:
-            return False
-
-        mail_type = structured_mail_variables[TYPE_FIELD]
-        if mail_type not in ALLOWED_TYPES:
-            logging.error(f"'{mail_type}' is not an allowed type.")
-            return False
-
-        structured_mail_variables["id"] = self._generate_id(mail, mail_type)
-
-        metadata = Gobits()
-        return self._publish_to_topic(structured_mail_variables, metadata)
 
     @staticmethod
     def _generate_id(mail: dict, message_type: str) -> Optional[str]:
