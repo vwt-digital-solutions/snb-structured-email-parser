@@ -34,6 +34,9 @@ class EmailProcessor(object):
 
     def _process_mail(self, mail) -> bool:
         mail_sender = mail["sender"].lower()
+        subject = mail["subject"]
+
+        logging.info(f"Processing e-mail '{subject}' from '{mail_sender}'")
 
         if mail_sender not in SENDER_WHITELIST:
             date = mail.get("received_on", "")
