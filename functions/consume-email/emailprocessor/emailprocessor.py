@@ -138,14 +138,20 @@ class EmailProcessor(object):
         :rtype: dict
         """
         values = dict()
-        rows = [table_data.text for table_data in html_content.table.find_all("td")]
-        data_count = len(rows)
 
-        if data_count % 2:
+        table = html_content.table
+        if not table:
+            logging.error("No table found in content.")
+            return values
+
+        rows = [table_data.text for table_data in table.find_all("td")]
+        row_count = len(rows)
+
+        if row_count % 2:
             logging.error("The table must have 2 columns.")
             return values
 
-        for i in range(0, data_count, 2):
+        for i in range(0, row_count, 2):
             field, value = rows[i:i + 2]
             if not field:
                 continue
