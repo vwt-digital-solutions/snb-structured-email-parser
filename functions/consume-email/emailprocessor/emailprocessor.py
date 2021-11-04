@@ -147,15 +147,15 @@ class EmailProcessor(object):
             logging.error("No table found in content.")
             return values
 
-        rows = [table_data.text for table_data in table.find_all("td")]
-        row_count = len(rows)
+        table_data = [table_data.text for table_data in table.find_all("td")]
+        table_data_count = len(table_data)
 
-        if row_count % 2:
+        if table_data_count % 2:
             logging.error("The table must have 2 columns.")
             return values
 
-        for i in range(0, row_count, 2):
-            field, value = rows[i:i + 2]
+        for i in range(0, table_data_count, 2):
+            field, value = table_data[i:i + 2]
             if not field:
                 continue
 
