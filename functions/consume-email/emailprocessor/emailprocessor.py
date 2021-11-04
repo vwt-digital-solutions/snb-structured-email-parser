@@ -18,7 +18,7 @@ from config import (
 
 
 HEADER_REGEX = re.compile(r"([^\n:]+):\s*<<?([^>]*)>>?")
-TICKET_NUMBER_REGEX = re.compile(r"^[^[]+\[(Ticket#[^]]+)]")
+TICKET_NUMBER_REGEX = re.compile(r"^[^[]*\[(Ticket#[^]]+)]")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,6 +34,9 @@ class EmailProcessor(object):
 
     def _process_mail(self, mail) -> bool:
         mail_sender = mail["sender"].lower()
+        subject = mail["subject"]
+
+        logging.info(f"Processing e-mail '{subject}' from '{mail_sender}'")
 
         if mail_sender not in SENDER_WHITELIST:
             date = mail.get("received_on", "")
@@ -138,15 +141,21 @@ class EmailProcessor(object):
         :rtype: dict
         """
         values = dict()
-        rows = [table_data.text for table_data in html_content.table.find_all("td")]
-        data_count = len(rows)
 
-        if data_count % 2:
+        table = html_content.table
+        if not table:
+            logging.error("No table found in content.")
+            return values
+
+        table_data = [table_data.text for table_data in table.find_all("td")]
+        table_data_count = len(table_data)
+
+        if table_data_count % 2:
             logging.error("The table must have 2 columns.")
             return values
 
-        for i in range(0, data_count, 2):
-            field, value = rows[i:i + 2]
+        for i in range(0, table_data_count, 2):
+            field, value = table_data[i:i + 2]
             if not field:
                 continue
 
@@ -222,7 +231,7 @@ class EmailProcessor(object):
 
         match = TICKET_NUMBER_REGEX.match(subject)
         if not match:
-            logging.error("No ticket number found in e-mail subject.")
+            logging.error(f"No ticket number found in e-mail subject ({subject}).")
             return None
 
         ticket_number = match.group(1)
