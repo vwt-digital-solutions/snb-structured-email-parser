@@ -57,12 +57,7 @@ class EmailProcessor(object):
         # missing variables with empty strings.
         mail_variables = {field: mail_variables.get(field, str()) for field in FIELDS}
 
-        mail_id = self._generate_id(mail, mail_type)
-        if not mail_id:
-            logging.error("Could not generate id e-mail.")
-            return False
-
-        mail_variables["id"] = mail_id
+        mail_variables["id"] = self._generate_id(mail, mail_type)
 
         metadata = Gobits()
         return self._publish_to_topic(mail_variables, metadata)
