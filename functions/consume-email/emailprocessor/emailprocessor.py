@@ -228,7 +228,7 @@ class EmailProcessor(object):
 
         match = TICKET_NUMBER_REGEX.match(subject)
         if not match:
-            logging.error(f"No ticket number found in e-mail subject ({subject}).")
+            logging.error("No ticket number found in e-mail subject.")
             return None
 
         ticket_number = match.group(1)
