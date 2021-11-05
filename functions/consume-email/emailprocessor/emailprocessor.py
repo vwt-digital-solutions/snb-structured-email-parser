@@ -59,7 +59,7 @@ class EmailProcessor(object):
 
         mail_id = self._generate_id(mail, mail_type)
         if not mail_id:
-            logging.error("Could not generate id for e-mail.")
+            logging.error("Could not generate id e-mail.")
             return False
 
         mail_variables["id"] = mail_id
@@ -74,7 +74,7 @@ class EmailProcessor(object):
         :param html_text_raw: Raw HTML contents from e-mail.
         :type html_text_raw: str
         :return: Field-value pairs extracted from the provided HTML.
-        :rtype: dict
+        :rtype: str
         """
         html_content = BeautifulSoup(html_text_raw, "html.parser")
         html_text_rendered = html_content.get_text()
@@ -177,12 +177,12 @@ class EmailProcessor(object):
         """
         for field, value in other.items():
             counter = 1
-            available_field = field
-            while available_field in dictionary:
-                available_field = f"{field}_{counter}"
+            alt_field = field
+            while alt_field in dictionary:
+                alt_field = f"{field}_{counter}"
                 counter += 1
 
-            dictionary[available_field] = value
+            dictionary[alt_field] = value
 
         return dictionary
 
