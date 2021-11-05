@@ -18,7 +18,7 @@ from config import (
 
 
 HEADER_REGEX = re.compile(r"([^\n:]+):\s*<<?([^>]*)>>?")
-TICKET_NUMBER_REGEX = re.compile(r"^[^[]*\[(Ticket#[^]]+)]")
+TICKET_NUMBER_REGEX = re.compile(r"^[^[]+\[(Ticket#[^]]+)]")
 
 logging.basicConfig(level=logging.INFO)
 
