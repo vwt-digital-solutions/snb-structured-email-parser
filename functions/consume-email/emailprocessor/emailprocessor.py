@@ -45,17 +45,23 @@ class EmailProcessor(object):
         html_content = mail["body"]
         mail_variables = self._parse_structured_mail(html_content)
 
-        if TYPE_FIELD not in mail_variables:
-            logging.error(f"'{TYPE_FIELD}' was not found in e-mail data.")
+        # Checking if all configured fields are present.
+        all_fields_present = True
+        for field in FIELDS:
+            if field not in mail_variables:
+                all_fields_present = False
+                logging.error(f"Field '{field}' was not found in e-mail data.")
+
+        if not all_fields_present:
+            return False
 
         mail_type = mail_variables[TYPE_FIELD]
         if mail_type not in ALLOWED_TYPES:
             logging.error(f"'{mail_type}' is not an allowed type.")
             return False
 
-        # Create subset of mail_variables, making sure only configured fields are present, and substituting
-        # missing variables with empty strings.
-        mail_variables = {field: mail_variables.get(field, str()) for field in FIELDS}
+        # Filter to only send specified fields.
+        mail_variables = {field: value for field, value in mail_variables.items() if field in FIELDS}
 
         mail_variables["id"] = self._generate_id(mail, mail_type)
 
