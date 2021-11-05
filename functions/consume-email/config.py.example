@@ -1,0 +1,14 @@
+DEBUG_LOGGING = True or False
+
+SENDER = "e-mail address where e-mails should come from"
+
+ID = ["e-mail-field1", "e-mail-field2", "etcetera"]
+
+REQUIRED_FIELDS = [
+    "e-mail-field1",
+    "e-mail-field2",
+    "etcetera"
+]
+
+TOPIC_PROJECT_ID = "topic-project-id"
+TOPIC_NAME = "topic-name"
