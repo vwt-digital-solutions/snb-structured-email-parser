@@ -30,5 +30,35 @@ To make sure the function works according to the way it was intented, the incomi
 }
 ~~~
 
+### HTML Body
+The body of the e-mail has to come in a specific format. While there is some flexibility, it's recommended to keep
+as close to the following example as possible:
+
+~~~HTML
+header_field: &lt;&lt;header_value&gt;&gt;<br>
+foo: &lt;&lt;bar&gt;&gt;<br>
+<table>
+    <tbody>
+        <tr>
+            <td>table_field:</td>
+            <td>table_value</td>
+        </tr>
+        <tr>
+            <td>eggs</td>
+            <td>spam</td>
+        </tr>
+    </tbody>
+</table>
+~~~
+
+The fields and values required depend on the [configuration](config.example.py).
+
+Additionally, the parser will deal with:
+- leading and tailing whitespaces,
+- HTML `&nbsp;` characters,
+- tailing colon (`:`) characters,
+- formatting field names to be lowercase & replacing spaces with underscores (`_`),
+- and appending field names with `_{index}` when duplicates exist between header and table field names.
+
 ## License
 This function is licensed under the [GPL-3](https://www.gnu.org/licenses/gpl-3.0.en.html) License
