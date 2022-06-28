@@ -250,10 +250,8 @@ class EmailProcessor(object):
             future = publisher.publish(
                 topic_path, bytes(json.dumps(pubsub_message).encode("utf-8"))
             )
-            future.add_done_callback(
-                lambda x: logging.debug(f"Published email with ID {message['id']}")
-            )
-            logging.info(f"Publishing email with ID {message['id']}")
+            logging.debug(f"Publishing email with ID {message['id']}")
+            logging.info(f"Published email with ID {message['id']}: {future.result()}")
             return True
         except Exception as e:
             logging.exception(
