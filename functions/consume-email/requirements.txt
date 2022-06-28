@@ -126,10 +126,9 @@ urllib3==1.26.5
     # via
     #   -r ./requirements.in
     #   requests
-werkzeug==1.0.1
-    # via
-    #   -r ./requirements.in
-    #   gobits
+werkzeug==2.0.2 \
+    --hash=sha256:63d3dc1cf60e7b7e35e97fa9861f7397283b75d765afcaefd993d6046899de8f \
+    --hash=sha256:aa2bb6fc8dee8d6c504c0ac1e7f5f7dc5810a9903e793b6f715a9f015bdadb9a
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
