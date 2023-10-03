@@ -31,8 +31,8 @@ dataclasses==0.6 \
     --hash=sha256:454a69d788c7fda44efd71e259be79577822f5e3f53f029a22d08004e951dc9f \
     --hash=sha256:6988bd2b895eef432d562370bb707d540f32f7360ab13da45340101bc2307d84
     # via -r requirements.in
-gobits==1.0.8 \
-    --hash=sha256:52e818f7b42317fd28b3360328860100cc22236a594c8824351b245145a66ad1 \
+gobits==1.0.10 \
+    --hash=sha256:65355a894d127c3a52a98f732b1da054d0e68ecac139c652d1e50b1f99043ff3 \
     --hash=sha256:df301a135f35933fc766c9ffe098fd4bfd1a6c5729327bea5297b3659702f444
     # via -r requirements.in
 google-api-core[grpc]==1.29.0 \
